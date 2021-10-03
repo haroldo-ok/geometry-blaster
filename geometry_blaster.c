@@ -12,6 +12,7 @@
 #define PLAYER_LEFT (8)
 #define PLAYER_RIGHT (256 - 16)
 #define PLAYER_BOTTOM (SCREEN_H - 24)
+#define PLAYER_INVINCIBILITY_FRAMES (2 * 60)
 
 #define MAX_ENEMIES_X (3)
 #define MAX_ENEMIES_Y (3)
@@ -40,6 +41,7 @@ struct level {
 	char number;
 	
 	char enemy_count;
+	int player_invincible;
 	
 	char horizontal_spacing, horizontal_odd_spacing;
 	char vertical_spacing;	
@@ -118,11 +120,39 @@ char is_colliding_with_shot(actor *act) {
 	if (!shot.active) return 0;
 	if (!act->active) return 0;
 
-	delta = act->y - shot.y;
-	if (delta < -6 || delta > act->pixel_h + 14) return 0;	
+	delta = shot.y - act->y;
+	if (delta < -8 || delta > 16) return 0;	
 
-	delta = act->x - shot.x;
-	if (delta < -6 || delta > act->pixel_w + 14) return 0;
+	delta = shot.x - act->x;
+	if (delta < -8 || delta > 16) return 0;
+	
+	return 1;
+}
+
+char is_player_colliding_with_enemy_shot(actor *enm_shot) {
+	static int delta;
+	
+	if (!enm_shot->active) return 0;
+
+	delta = enm_shot->y - player.y;
+	if (delta < -4 || delta > 15) return 0;	
+
+	delta = enm_shot->x - player.x;
+	if (delta < -4 || delta > 11) return 0;
+	
+	return 1;
+}
+
+char is_player_colliding_with_enemy(actor *enemy) {
+	static int delta;
+	
+	if (!enemy->active) return 0;
+
+	delta = enemy->y - player.y;
+	if (delta < -12 || delta > 12) return 0;	
+
+	delta = enemy->x - player.x;
+	if (delta < -12 || delta > 12) return 0;
 	
 	return 1;
 }
@@ -188,6 +218,11 @@ void handle_enemies_movement() {
 					shot.active = 0;
 
 					PSGSFXPlay(enemy_death_psg, SFX_CHANNELS2AND3);
+				}
+				
+				if (is_player_colliding_with_enemy(enemy)) {
+					enemy->active = 0;
+					level.player_invincible = PLAYER_INVINCIBILITY_FRAMES;
 				}
 			}
 
@@ -295,6 +330,10 @@ void handle_enemy_shots_movement() {
 		if (enm_shot->active) {
 			enm_shot->y += ENEMY_SHOT_SPEED;
 			if (enm_shot->y > SCREEN_H) enm_shot->active = 0;
+			if (is_player_colliding_with_enemy_shot(enm_shot)) {
+				enm_shot->active = 0;
+				level.player_invincible = PLAYER_INVINCIBILITY_FRAMES;
+			}
 		} else {
 			if (rand() & 0x1F) fire_as_enemy_shot(enm_shot);
 		}
@@ -332,8 +371,9 @@ void init_level() {
 	level.advance_y_timer = level.advance_y_timer_max;
 	level.invert_y_timer = level.invert_y_timer_max;
 
+	level.player_invincible = 0;
 	
-	level.cheat_skip = 0;
+	level.cheat_skip = 0;	
 	
 	init_enemies();
 	init_enemy_shots();		
@@ -372,6 +412,8 @@ void main() {
 			init_level();
 		}
 		
+		if (level.player_invincible) level.player_invincible--;
+		
 		handle_player_input();
 		handle_shot_movement();
 		handle_enemies_movement();
@@ -379,7 +421,7 @@ void main() {
 		
 		SMS_initSprites();
 
-		draw_actor(&player);
+		if (!(level.player_invincible & 0x4)) draw_actor(&player);
 		draw_actor(&shot);
 		draw_enemies();
 		draw_enemy_shots();
@@ -391,7 +433,7 @@ void main() {
 }
 
 SMS_EMBED_SEGA_ROM_HEADER(9999,0); // code 9999 hopefully free, here this means 'homebrew'
-SMS_EMBED_SDSC_HEADER(0,3, 2021,10,03, "Haroldo-OK\\2021", "Geometry Blaster",
+SMS_EMBED_SDSC_HEADER(0,4, 2021,10,03, "Haroldo-OK\\2021", "Geometry Blaster",
   "A geometric shoot-em-up.\n"
   "Made for the Minimalist Game Jam - https://itch.io/jam/minimalist-game-jam\n"
   "Built using devkitSMS & SMSlib - https://github.com/sverx/devkitSMS");
