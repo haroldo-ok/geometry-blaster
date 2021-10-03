@@ -12,6 +12,7 @@
 #define PLAYER_LEFT (8)
 #define PLAYER_RIGHT (256 - 16)
 #define PLAYER_BOTTOM (SCREEN_H - 24)
+#define PLAYER_INVINCIBILITY_FRAMES (2 * 60)
 
 #define MAX_ENEMIES_X (3)
 #define MAX_ENEMIES_Y (3)
@@ -142,6 +143,20 @@ char is_player_colliding_with_enemy_shot(actor *enm_shot) {
 	return 1;
 }
 
+char is_player_colliding_with_enemy(actor *enemy) {
+	static int delta;
+	
+	if (!enemy->active) return 0;
+
+	delta = enemy->y - player.y;
+	if (delta < -12 || delta > 12) return 0;	
+
+	delta = enemy->x - player.x;
+	if (delta < -12 || delta > 12) return 0;
+	
+	return 1;
+}
+
 void init_enemies() {
 	static char i, j;
 	static int x, y;
@@ -203,6 +218,11 @@ void handle_enemies_movement() {
 					shot.active = 0;
 
 					PSGSFXPlay(enemy_death_psg, SFX_CHANNELS2AND3);
+				}
+				
+				if (is_player_colliding_with_enemy(enemy)) {
+					enemy->active = 0;
+					level.player_invincible = PLAYER_INVINCIBILITY_FRAMES;
 				}
 			}
 
@@ -312,7 +332,7 @@ void handle_enemy_shots_movement() {
 			if (enm_shot->y > SCREEN_H) enm_shot->active = 0;
 			if (is_player_colliding_with_enemy_shot(enm_shot)) {
 				enm_shot->active = 0;
-				level.player_invincible = 2 * 60;
+				level.player_invincible = PLAYER_INVINCIBILITY_FRAMES;
 			}
 		} else {
 			if (rand() & 0x1F) fire_as_enemy_shot(enm_shot);
