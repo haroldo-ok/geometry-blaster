@@ -40,6 +40,7 @@ struct level {
 	char number;
 	
 	char enemy_count;
+	int player_invincible;
 	
 	char horizontal_spacing, horizontal_odd_spacing;
 	char vertical_spacing;	
@@ -123,6 +124,20 @@ char is_colliding_with_shot(actor *act) {
 
 	delta = act->x - shot.x;
 	if (delta < -6 || delta > act->pixel_w + 14) return 0;
+	
+	return 1;
+}
+
+char is_player_colliding_with_enemy_shot(actor *enm_shot) {
+	static int delta;
+	
+	if (!enm_shot->active) return 0;
+
+	delta = enm_shot->y - player.y;
+	if (delta < -4 || delta > 15) return 0;	
+
+	delta = enm_shot->x - player.x;
+	if (delta < -4 || delta > 11) return 0;
 	
 	return 1;
 }
@@ -295,6 +310,10 @@ void handle_enemy_shots_movement() {
 		if (enm_shot->active) {
 			enm_shot->y += ENEMY_SHOT_SPEED;
 			if (enm_shot->y > SCREEN_H) enm_shot->active = 0;
+			if (is_player_colliding_with_enemy_shot(enm_shot)) {
+				enm_shot->active = 0;
+				level.player_invincible = 2 * 60;
+			}
 		} else {
 			if (rand() & 0x1F) fire_as_enemy_shot(enm_shot);
 		}
@@ -332,8 +351,9 @@ void init_level() {
 	level.advance_y_timer = level.advance_y_timer_max;
 	level.invert_y_timer = level.invert_y_timer_max;
 
+	level.player_invincible = 0;
 	
-	level.cheat_skip = 0;
+	level.cheat_skip = 0;	
 	
 	init_enemies();
 	init_enemy_shots();		
@@ -372,6 +392,8 @@ void main() {
 			init_level();
 		}
 		
+		if (level.player_invincible) level.player_invincible--;
+		
 		handle_player_input();
 		handle_shot_movement();
 		handle_enemies_movement();
@@ -379,7 +401,7 @@ void main() {
 		
 		SMS_initSprites();
 
-		draw_actor(&player);
+		if (!(level.player_invincible & 0x4)) draw_actor(&player);
 		draw_actor(&shot);
 		draw_enemies();
 		draw_enemy_shots();
