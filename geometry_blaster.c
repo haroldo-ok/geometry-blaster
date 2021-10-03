@@ -119,11 +119,11 @@ char is_colliding_with_shot(actor *act) {
 	if (!shot.active) return 0;
 	if (!act->active) return 0;
 
-	delta = act->y - shot.y;
-	if (delta < -6 || delta > act->pixel_h + 14) return 0;	
+	delta = shot.y - act->y;
+	if (delta < -8 || delta > 16) return 0;	
 
-	delta = act->x - shot.x;
-	if (delta < -6 || delta > act->pixel_w + 14) return 0;
+	delta = shot.x - act->x;
+	if (delta < -8 || delta > 16) return 0;
 	
 	return 1;
 }
