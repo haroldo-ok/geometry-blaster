@@ -19,7 +19,7 @@
 #define MAX_ENEMY_SHOTS (2)
 #define ENEMY_SHOT_SPEED (3)
 
-#define MAX_LEVELS (6)
+#define MAX_LEVELS (7)
 #define LV_ODD_SPACING (0x01)
 #define LV_ODD_X_SPEED (0x02)
 #define LV_FULL_HEIGHT (0x04)
@@ -63,6 +63,7 @@ struct level {
 const level_info level_infos[MAX_LEVELS] = {
 	{192, 0, 0, 0, 0, 0, 0, LV_ODD_SPACING},
 	{128, 128, 0, 120, 0, 0, 0, LV_ODD_SPACING | LV_FULL_HEIGHT},
+	{320, 0, 30, 120, 0, 0, 0, LV_ODD_SPACING},
 	{160, 160, 0, 120, 0, 0, 0, LV_ODD_X_SPEED | LV_FULL_HEIGHT},
 	{256, 160, 0, 0, 0, 0, 60, LV_ODD_SPACING},
 	{160, 256, 60, 60, 37, 93, 0, LV_FULL_HEIGHT},
