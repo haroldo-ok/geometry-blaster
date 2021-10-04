@@ -356,7 +356,7 @@ void init_level() {
 	
 	level.incr_x.w = 0;
 	level.incr_y.w = 0;
-	level.spd_x.w = info->spd_x;
+	level.spd_x.w = info->spd_x + 128 * ((int) (level.number - 1) / MAX_LEVELS);
 	level.spd_y.w = info->spd_y;
 	
 	level.horizontal_spacing = 256 / 3;
