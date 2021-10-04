@@ -19,7 +19,7 @@
 #define MAX_ENEMY_SHOTS (2)
 #define ENEMY_SHOT_SPEED (3)
 
-#define MAX_LEVELS (5)
+#define MAX_LEVELS (6)
 #define LV_ODD_SPACING (0x01)
 #define LV_ODD_X_SPEED (0x02)
 #define LV_FULL_HEIGHT (0x04)
@@ -65,7 +65,8 @@ const level_info level_infos[MAX_LEVELS] = {
 	{128, 128, 0, 120, 0, 0, 0, LV_ODD_SPACING | LV_FULL_HEIGHT},
 	{160, 160, 0, 120, 0, 0, 0, LV_ODD_X_SPEED | LV_FULL_HEIGHT},
 	{256, 160, 0, 0, 0, 0, 60, LV_ODD_SPACING},
-	{160, 256, 60, 60, 37, 93, 0, LV_FULL_HEIGHT}
+	{160, 256, 60, 60, 37, 93, 0, LV_FULL_HEIGHT},
+	{300, 160, 0, 0, 0, 0, 60, LV_ODD_SPACING | LV_ODD_X_SPEED}
 };
 
 void load_standard_palettes() {
@@ -158,14 +159,19 @@ char is_player_colliding_with_enemy(actor *enemy) {
 }
 
 void init_enemies() {
-	static char i, j;
+	static char i, j, base_tile;
 	static int x, y;
 	static actor *enemy;
+	
+	switch (level.number % 2) {
+	case 0: base_tile = 64; break;
+	case 1: base_tile = 128; break;
+	}
 
 	for (i = 0, y = level.starting_y; i != MAX_ENEMIES_Y; i++, y += level.vertical_spacing) {
 		enemy = enemies[i];
 		for (j = 0, x = i & 1 ? level.horizontal_odd_spacing : 0; j != MAX_ENEMIES_X; j++, x += level.horizontal_spacing) {
-			init_actor(enemy, x, y, 2, 1, 64, 6);
+			init_actor(enemy, x, y, 2, 1, base_tile, 6);
 			enemy++;
 		}
 	}
