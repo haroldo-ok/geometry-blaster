@@ -164,9 +164,10 @@ void init_enemies() {
 	static int x, y;
 	static actor *enemy;
 	
-	switch (level.number % 2) {
+	switch (level.number % 3) {
 	case 0: base_tile = 64; break;
 	case 1: base_tile = 128; break;
+	case 2: base_tile = 192; break;
 	}
 
 	for (i = 0, y = level.starting_y; i != MAX_ENEMIES_Y; i++, y += level.vertical_spacing) {
